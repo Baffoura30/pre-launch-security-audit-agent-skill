@@ -1,0 +1,19 @@
+# Pre-Launch Security Audit Rule for Cursor
+
+When the user asks to "audit the app", "security audit", "run pre-launch audit", or "check before launch", activate the Pre-Launch Security Audit workflow defined in `SKILL.md`.
+
+## Workflow Summary
+1. Step 1: Intake (detect stack, ask <= 5 questions only if code cannot tell).
+2. Step 2: Code Pass (run all 67 checks across the 13 security areas without pausing, generate `AUDIT.md`, and report a 3-line-per-failure summary grouped by severity).
+3. Step 3: Fix Round (fix approved items only, Critical first, enforce on backend, test in preview/staging, update `AUDIT.md`).
+4. Step 4: Checklist & Report (run applicable human checks H1-H18, output one-screen final report).
+
+## Critical Safety Rules
+- Audit only this project; never scan external domains.
+- Read-only by default until user explicitly approves fixes.
+- Never output full secrets (mask as `sk-e••••`).
+- Never ask the user to paste secrets into chat.
+- Never weaken security to resolve errors.
+- Always add `AUDIT.md` to `.gitignore`.
+
+Refer to `SKILL.md` for full check descriptions and criteria.
