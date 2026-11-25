@@ -83,7 +83,7 @@ The one-liner runs whatever `install.sh` is on `main` at that moment. If you'd r
 ```bash
 git clone https://github.com/initeshjain/pre-launch-security-audit-agent-skill.git /tmp/pre-launch-audit
 cd /tmp/pre-launch-audit
-git checkout <tag-or-commit>   # optional: pin to a version you've reviewed
+git checkout v1.0.0   # optional: pin to a version you've reviewed
 less install.sh                # read what it does
 cd /path/to/your/project
 bash /tmp/pre-launch-audit/install.sh claude
@@ -92,7 +92,7 @@ bash /tmp/pre-launch-audit/install.sh claude
 To pin the one-liner instead, use the same tag or commit in the URL and in `SKILL_REF`, so the script and the files it downloads come from the same version:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/initeshjain/pre-launch-security-audit-agent-skill/<tag-or-commit>/install.sh | SKILL_REF=<tag-or-commit> bash -s claude
+curl -fsSL https://raw.githubusercontent.com/initeshjain/pre-launch-security-audit-agent-skill/v1.0.0/install.sh | SKILL_REF=v1.0.0 bash -s claude
 ```
 
 ---
