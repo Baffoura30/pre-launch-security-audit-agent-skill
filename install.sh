@@ -5,7 +5,9 @@
 
 set -e
 
-REPO_RAW_URL="https://raw.githubusercontent.com/initeshjain/pre-launch-security-audit-agent-skill/main"
+# Set SKILL_REF to a tag or commit to pin the files this installer downloads (default: main)
+SKILL_REF="${SKILL_REF:-main}"
+REPO_RAW_URL="https://raw.githubusercontent.com/initeshjain/pre-launch-security-audit-agent-skill/${SKILL_REF}"
 TARGET_DIR="${PWD}"
 TOOL="${1:-auto}"
 
