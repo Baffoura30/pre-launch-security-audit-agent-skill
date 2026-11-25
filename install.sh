@@ -17,21 +17,41 @@ echo "   Author: Nitesh Jain (@initeshjain)"
 echo "   GitHub: https://github.com/initeshjain/pre-launch-security-audit-agent-skill"
 echo "============================================================"
 
-# Determine file source: local if files exist in same directory, otherwise fetch via curl
+# When run from a file (not piped from curl), local copies come from the
+# folder holding this script, never from the project being installed into.
+SCRIPT_DIR=""
+if [ -n "${BASH_SOURCE[0]:-}" ] && [ -f "${BASH_SOURCE[0]}" ]; then
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+fi
+
+# Copy from SCRIPT_DIR when the file is there, otherwise download it.
 fetch_file() {
   local filename="$1"
   local dest="$2"
 
-  if [ -f "${filename}" ]; then
-    mkdir -p "$(dirname "$dest")"
-    cp "${filename}" "$dest"
-  elif [ -f "$(dirname "$0")/${filename}" ]; then
-    mkdir -p "$(dirname "$dest")"
-    cp "$(dirname "$0")/${filename}" "$dest"
+  mkdir -p "$(dirname "$dest")"
+  if [ -n "$SCRIPT_DIR" ] && [ -f "${SCRIPT_DIR}/${filename}" ]; then
+    # Installing into the repo itself: the file is already in place.
+    if [ "${SCRIPT_DIR}/${filename}" -ef "$dest" ]; then
+      return 0
+    fi
+    cp "${SCRIPT_DIR}/${filename}" "$dest"
   else
-    mkdir -p "$(dirname "$dest")"
     curl -fsSL "${REPO_RAW_URL}/${filename}" -o "$dest"
   fi
+}
+
+# Like fetch_file, but keeps a file the project already has (for shared
+# paths such as .github/copilot-instructions.md or a root SKILL.md).
+fetch_file_keep() {
+  local filename="$1"
+  local dest="$2"
+
+  if [ -e "$dest" ] && ! { [ -n "$SCRIPT_DIR" ] && [ "${SCRIPT_DIR}/${filename}" -ef "$dest" ]; }; then
+    echo "ℹ️  ${dest#"${TARGET_DIR}"/} already exists; keeping existing file."
+    return 0
+  fi
+  fetch_file "$filename" "$dest"
 }
 
 install_antigravity() {
@@ -66,15 +86,19 @@ install_cursor() {
 
 install_copilot() {
   echo "📦 Installing for GitHub Copilot..."
-  fetch_file ".github/copilot-instructions.md" "${TARGET_DIR}/.github/copilot-instructions.md"
-  echo "✅ Installed to .github/copilot-instructions.md"
+  if [ -e "${TARGET_DIR}/.github/copilot-instructions.md" ] && ! { [ -n "$SCRIPT_DIR" ] && [ "${SCRIPT_DIR}/.github/copilot-instructions.md" -ef "${TARGET_DIR}/.github/copilot-instructions.md" ]; }; then
+    echo "ℹ️  .github/copilot-instructions.md already exists; keeping existing file."
+  else
+    fetch_file ".github/copilot-instructions.md" "${TARGET_DIR}/.github/copilot-instructions.md"
+    echo "✅ Installed to .github/copilot-instructions.md"
+  fi
 }
 
 install_root_skill() {
   echo "📦 Installing root SKILL.md and templates..."
-  fetch_file "SKILL.md" "${TARGET_DIR}/SKILL.md"
-  fetch_file "templates/AUDIT_TEMPLATE.md" "${TARGET_DIR}/templates/AUDIT_TEMPLATE.md"
-  fetch_file "templates/AGENT_PROMPT.md" "${TARGET_DIR}/templates/AGENT_PROMPT.md"
+  fetch_file_keep "SKILL.md" "${TARGET_DIR}/SKILL.md"
+  fetch_file_keep "templates/AUDIT_TEMPLATE.md" "${TARGET_DIR}/templates/AUDIT_TEMPLATE.md"
+  fetch_file_keep "templates/AGENT_PROMPT.md" "${TARGET_DIR}/templates/AGENT_PROMPT.md"
   echo "✅ Installed SKILL.md and template guides."
 }
 
